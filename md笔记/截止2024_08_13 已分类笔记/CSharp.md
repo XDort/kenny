@@ -214,105 +214,7 @@ string s = "Hello Extension Methods";
 int i = s.WordCount();
 ```
 
-#### (15)LINQ
-
-linq 常用API
-
-##### 查询方法
-
-（1）**`Select`**：
-
-- 用于从序列中选择特定的数据。
-
-```c#
-var names = people.Select(p => p.Name);
-```
-
-（2）**`Where`**：
-
-- 根据指定条件筛选序列中的元素。
-
-```c#
-var adults = people.Where(p => p.Age >= 18);
-```
-
-（3）**`OrderBy`** 和 **`OrderByDescending`**：
-
-- 用于对序列进行升序或降序排序。
-
-```c#
-var sortedNames = names.OrderBy(n => n);
-var sortedNamesDesc = names.OrderByDescending(n => n);
-```
-
-（4）**`GroupBy`**：
-
-- 根据指定的键对序列中的元素进行分组。
-
-```c#
-var groupedPeople = people.GroupBy(p => p.City);
-```
-
-（5）**`Join`** 和 **`GroupJoin`**：
-
-- `Join`用于将两个序列中的元素关联起来，而`GroupJoin`则将一个序列中的元素与另一个序列中匹配的元素进行分组。
-
-```c#
-var query = people.Join(cities,
-                        person => person.CityId,
-                        city => city.Id,
-                        (person, city) => new { Person = person, CityName = city.Name });
-
-var queryGrouped = people.GroupJoin(cities,
-                                    person => person.CityId,
-                                    city => city.Id,
-                                    (person, cityGroup) => new { Person = person, Cities = cityGroup });
-```
-
-##### 聚合方法
-
-（1）**`Count`**：
-
-- 返回序列中元素的数量。
-
-```c#
-var count = people.Count();
-```
-
-（2）**`Sum`**、**`Average`**、**`Min`**、**`Max`**：
-
-- 分别用于计算序列中元素的总和、平均值、最小值和最大值。
-
-```c#
-var totalAge = people.Sum(p => p.Age);
-var averageAge = people.Average(p => p.Age);
-var minAge = people.Min(p => p.Age);
-var maxAge = people.Max(p => p.Age);
-```
-
-##### 其他方法
-
-（1）**`First`**、**`FirstOrDefault`**、**`Single`**、**`SingleOrDefault`**：
-
-- 用于获取序列中的第一个元素或满足条件的唯一元素。
-
-```c#
-var firstPerson = people.First();
-var firstAdult = people.First(p => p.Age >= 18);
-var singlePerson = people.Single(p => p.Id == 1);
-var singleOrDefaultPerson = people.SingleOrDefault(p => p.Id == 1);
-```
-
-（2）**`Skip`** 和 **`Take`**：
-
-- `Skip`用于跳过序列中指定数量的元素，`Take`用于从序列中获取指定数量的元素。
-
-```c#
-var skippedPeople = people.Skip(5);
-var takenPeople = people.Take(10);
-```
-
-
+#### (15)LINQ 详见LINQ.md
 
 #### (16)顶级语句
 
@@ -386,3 +288,175 @@ protected internal
 
 对于不在同一程序集中的代码，只有派生自包含 `protected internal` 成员的类的代码可以访问。
 
+
+
+#### 闭包的概念
+
+```
+int multiplier = 2;
+
+Func<int, int> multiply = x => x * multiplier;
+
+Console.WriteLine(multiply(3)); // 输出 6
+```
+
+这个 lambda 表达式会被编译器转换成类似下面的类：
+
+```
+public class DisplayClass
+{
+    public int multiplier;
+
+    public int Multiply(int x)
+    {
+        return x * this.multiplier;
+    }
+}
+```
+
+使用这个类的代码大概如下：
+
+```
+DisplayClass displayClass = new DisplayClass();
+
+displayClass.multiplier = 2;
+
+Func<int, int> multiply = displayClass.Multiply;
+
+Console.WriteLine(multiply(3)); // 输出 6
+```
+
+闭包的实现
+
+闭包是指在函数内部定义的函数可以捕获和保存其外部范围的变量。编译器通过生成一个包含这些捕获变量的类来实现闭包。
+
+捕获的变量
+
+在上面的例子中，`multiplier` 是一个被捕获的变量。编译器会将捕获的变量转换成类的成员变量，并将 lambda 表达式转换成这个类的方法。
+
+捕获变量的生命周期
+
+捕获的变量的生命周期与闭包对象的生命周期一致。这意味着即使在 lambda 表达式执行完成后，只要闭包对象仍然存在，捕获的变量也仍然存在。
+
+
+
+#### select new {}语法
+
+`select new {}` 语法用于创建匿名类型，编译器会自动根据你提供的值推断属性类型。
+
+例子：
+
+```c#
+var query = from rUser in _dbContext.Set<RUser>()
+    join user in _dbContext.Set<User>() on rUser.UserId equals user.Id
+    select new { rUser, userDto = _mapper.Map<UserDto>(user) };
+
+var result = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+```
+
+连接了rUser和User两张表，返回包含两个实体类的匿名类型，其中对user实体做了映射
+
+执行查询后返回的是一个匿名类型的集合，应该使用LINQ表达式转换为元组类型的集合返回
+
+```c#
+return result.Select(x => (x.rUser, x.userDto)).ToList()
+```
+
+
+
+#### 匿名类型 vs 元组
+
+`List<{UserDto userDto, RUser rUser}>`
+
+- 这是一个匿名类型（Anonymous Type）的列表。
+- 匿名类型具有命名属性，例如 `userDto` 和 `rUser`。
+- 它们是在编译时生成的，只能在方法体内使用，因为匿名类型无法跨方法或类边界传递。
+
+`List<(UserDto, rUser)>`
+
+- 这是一个元组（Tuple）的列表。
+- 元组类型的属性是按位置访问的，例如 `Item1` 和 `Item2`。
+- 元组可以跨方法或类边界传递，并且可以通过使用元组解构来方便地访问它们的元素。
+
+
+
+#### 语法糖
+
+只读属性
+
+```c#
+public string str => "string";
+```
+
+这个属性的行为相当于：
+
+```c#
+private readonly string _str = "string";    
+
+public string str    
+{       
+
+	 get { return _str; }    
+
+}
+```
+
+
+
+#### 检查集合属性
+
+`orderItems is { Count: > 0 }`
+
+ 这是 C# 8.0 中引入的一种**模式匹配**语法，用于检查 `orderItems` 集合是否为空。具体来说，这种语法检查 `orderItems` 是否是一个实现了 `Count` 属性的集合，并且其 `Count` 属性的值大于 `0`。Count:  0 是否等于0
+
+⚠️如果orderItems该集合为null，会直接返回false
+
+
+
+#### yield实现简易迭代器，迭代器调用时机测试
+
+```c#
+foreach (var i in new int[] { 1, 2, 3 })
+{
+    Console.WriteLine("第" + i + "次");
+  
+    var enumerator = TestEnumerator(i);
+
+    foreach (var j in enumerator)
+    {
+        Console.WriteLine(j);
+    }
+}
+
+IEnumerable<int> TestEnumerator(int i)
+{
+    if (i % 2 == 1)
+    {
+        yield return 3;
+        yield return 1;
+    }
+    else
+    {
+        yield return 2;
+        yield return 0;
+    }
+
+    yield return -1;
+}
+```
+
+通过断点打到foreach (var j in enumerator)这一行，可以得知，每通过循环调用一次TestEnumerator，都会执行一次TestEnumerator方法通过yield return返回一个IEnumerable\<int>，比如第一次循环yield return 3; 第二次会根据状态机保存位置继续执行，直到遇到yield return语句，即yield return 1;
+
+即每执行一次IEnumerable中的MoveNext方法yield return 返回一次
+
+
+
+#### as关键字
+
+`as` 关键字在 C# 中用于进行**引用类型**或**可空类型**的转换。与传统的类型转换操作符 `(T)` 不同，`as` 关键字在转换失败时不会抛出异常，而是返回 `null`。这种方式在处理可能失败的类型转换时更加安全和高效。
+
+
+
+#### 匿名类型自动重写的方法
+
+匿名类型在创建时自动重写了 `Equals` 和 `GetHashCode` 方法，因此在使用匿名类型的集合时无需显式重写这些方法。

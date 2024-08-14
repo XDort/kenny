@@ -57,9 +57,7 @@ Root Project为TeamCity初始化时就创建的一个Project，是一个项目�
 
 点进去就可以配置
 
-![image-20240709113249287](../../../../Library/Application Support/typora-user-images/image-20240709113249287.png)
-
-
+![20240709a](../img/20240709a.jpg)
 
 ##### 创建流水线节点
 
@@ -75,7 +73,7 @@ build step -> add build step
 
 设置触发器
 
-![WeChat8248066b383b2b093ea7a9c7b753cb5b](../../../笔记/md笔记/img/WeChat8248066b383b2b093ea7a9c7b753cb5b.jpg)
+![WeChat8248066b383b2b093ea7a9c7b753cb5b](./../img/WeChat8248066b383b2b093ea7a9c7b753cb5b.jpg)
 
 匹配符合命名的分支触发构建，+:* 表示任何分支
 

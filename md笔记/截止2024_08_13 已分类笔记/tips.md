@@ -82,3 +82,68 @@ rider在尝试fetch时需要登陆公司gitlab，但是使用了rider内置插�
 双击shift搜索定位controller方法 （也可以筛选endpoint）
 
 ![WeChat08ef4df18fab9fca1f4d360e5d7b9d21](../img/WeChat08ef4df18fab9fca1f4d360e5d7b9d21.jpg)
+
+
+
+⚠️在 C# 中，当一个 lambda 表达式作为委托传递给方法时，委托的参数来自于方法内部对该委托的调用。也就是说，委托的参数是在方法中调用该委托时传递的。
+
+
+
+JWT token过期时间要用DateTime.UtcNow，避免分布式系统存储的时区问题
+
+
+
+#### Rider ide快捷键生成构造函数的坑
+
+由于声明的属性是private的，生成时首选自动检测访问权限，默认生成的构造函数是protected，导致autofac找不到构造函数
+
+
+
+#### 异常：不能重复跟踪相同主键的实体
+
+出现此异常的原因是执行了查询操作跟踪了一些实体
+
+但是后来执行更新操作了时，又对之前查询跟踪的实体进行更新（相同主键）
+
+而且是new 出来的实体，没有直接用查询返回的实体进行更新，导致出现不能重复跟踪相同主键实体的异常
+
+EFCore根据主键值跟踪创建实例
+
+
+
+#### 文件名规范
+
+文件名不要使用mac等其他系统可以使用，但是windows系统不能使用的特殊字符
+比如 : 和 "
+否则windows系统从github上拉取文件会报错
+
+
+
+#### 多线程中注意闭包问题
+
+注意闭包捕获的作用域外的变量，是变量的引用值，而不是其值，比如：
+
+```c#
+var tasks = new List<Task>();
+
+for (int i = 0; i < 10; i++)
+{
+    tasks.Add(Task.Run(() =>
+    {
+        // 使用闭包捕获循环变量i
+        Console.WriteLine($"Task {i} is starting.");
+      
+        Task.Delay(1000).Wait();
+      
+        Console.WriteLine($"Task {i} is completed.");
+    }));
+}
+```
+
+这个例子中打印的 i 始终为循环结束后的 10
+
+变量值发生改变时，闭包中捕获的变量也会改变，可以在作用域内创建一个新的变量存储 i 来避免
+
+
+
+当你在拥有main方法的项目中引用`Microsoft.NET.Test.Sdk`，可能会导致多于一个入口点的报错，推测是Test包会自动生成一个main方法。

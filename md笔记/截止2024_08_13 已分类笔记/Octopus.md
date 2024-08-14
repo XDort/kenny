@@ -145,3 +145,143 @@ Kubernetes Object Status Check：
 **Check that the rollout was successful**
 
 使用 kubectl rollout status 命令来确认 Pod 已更新。
+
+
+
+#### 继续学习容器部署流程
+
+create deployment process 选择k8s容器这一步的 Add Container步骤：
+
+指定使用的仓库和镜像id
+
+配置容器暴露的端口
+
+CPU Requests and Limits 一般正式项目要配置，使用占位符
+
+可以添加一个config map用于为容器配置环境变量，configurations-webapi-#{Octopus.Deployment.Id | ToLower}
+
+[conigMap octopus 文档](https://octopus.com/docs/deployments/kubernetes/deploy-container#configmap)
+
+[conigMap K8s文档](https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-pod-configmap/)
+
+
+
+返回到添加k8s容器的配置：
+
+设置k8s的namespace，#{K8SNameSpace}
+
+配置这个部署的Service Name，Service Ports
+
+添加一个Config Map用于应用的配置，可以实现动态配置，读取左侧Variables菜单项中的配置（包括了project的变量）
+
+
+
+
+
+添加下一个process的step，deploy ingress：
+
+在 Kubernetes 中，Ingress 是一种管理集群外部访问到服务（Service）的方法，通常通过 HTTP 和 HTTPS。Ingress 可以提供负载均衡、SSL 终止和基于名称的虚拟托管等功能。部署 Ingress 的目的是为应用程序配置一个可以在外部访问的入口点，从而使用户能够通过域名或 URL 访问内部服务。
+
+
+
+设置Ingress Annotations
+
+Ingress 经常使用注解（Annotations）来配置一些选项，具体取决于 Ingress 控制器
+
+[Ingress Annotations octopus文档](https://octopus.com/docs/deployments/kubernetes/deploy-container#ingress-annotations)
+
+[Ingress 控制器 k8s文档](https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress-controllers/)
+
+
+
+设置Ingress host rules
+
+匹配host名和请求的路径和端口来路由到对应的service
+
+
+
+设置Ingress TLS
+
+
+
+设置k8s的namespace，#{K8SNamespace}
+
+
+
+配置IngressBaseDomainName
+
+
+
+#### 访问集群
+
+octopus发布成功后，由于服务类型选择的是ClusterIP类型，需要到k8s集群里访问服务
+
+安装openlens k8sGUI工具
+
+https://github.com/MuhammedKalkan/OpenLens/releases
+
+获取对应集群的openlens config文件并配置
+
+
+
+不能添加配置问题：
+
+安装或更新至最新版本的 AWS CLI
+
+AWS 命令行界面（AWS CLI）是**Amazon Web Services（AWS）推出的开源工具**。 可以通过命令行Shell 中的命令，使用CLI 与AWS 服务进行交互。
+
+这里要访问AWS cluster，所以要安装这个CLI
+
+安装完成后，拿到内部的OpenLens安装教程pdf文件
+
+里面有AWS的配置步骤，不配置不能认证成功
+
+
+
+安装步骤解决还是认证失败，解决：
+
+```
+<             apiVersion: client.authentication.k8s.io/v1alpha1
+---
+>             apiVersion: client.authentication.k8s.io/v1beta1
+```
+
+修改配置中的以上字段
+
+
+
+进入集群后，发现pod一直重启
+
+尝试添加容器的资源参数，没有效果
+
+本地构建镜像并推送到计算机安装的docker上，验证docker容器是否能正常启动
+
+发现是数据库不能正常连接，原因是docker不能访问宿主机对应的数据库端口
+
+而项目上数据库配置的地址是本机IP，k8s中公网也不能访问本机的内网IP
+
+
+
+launchSetting只在项目本地使用，容器中启动的.net8程序默认暴露的端口是8080，dockerfile需要暴露8080
+
+
+
+没有配置相关路由转发的情况下，直接访问.net程序暴露的端口会404，可以直接按路由请求接口
+
+
+
+mysql连接字符串需要添加
+
+```
+SslMode=none;
+```
+
+
+
+使用以下命令查看pod日志，发现还是mysql连接问题，k8s连不上本机的mysql
+
+kubectl logs \<pod-name> --namespace=\<namespace>
+
+
+
+⚠️发布前如果配置有修改，记得去Variables中修改ConfigMap中对应的配置

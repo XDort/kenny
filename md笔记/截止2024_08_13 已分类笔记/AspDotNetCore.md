@@ -169,3 +169,106 @@ private AuthenticateResult SetupPrincipal(User userInfo)
 通过 _httpContextAccessor.HttpContext?.User.Identity.Claims.SingleOrDefault(x => x.Type == type)?.Value
 
 获取到claims中的用户信息
+
+
+
+`endpoints.MapFallback` 是 ASP.NET Core 中用于配置备用路由（fallback routing）的方法。当应用程序没有找到匹配的路由时，`MapFallback` 会将请求路由到指定的处理程序。
+
+
+
+app.UseRouting
+功能：UseRouting 中间件用于启用路由功能，它会将请求路由到合适的终结点。这个中间件负责解析传入请求的 URL，并查找符合的路由规则。
+工作机制：在请求管道中调用 UseRouting 时，它会基于配置的路由规则（例如使用 MapControllers、MapRazorPages 等）来确定请求应当路由到哪个处理程序。
+
+app.UseEndpoints
+功能：UseEndpoints 中间件用于定义和配置路由终结点。它提供了一种注册路由的方式，您可以在其中定义终结点（如控制器、Razor Pages、或其他处理程序）。
+工作机制：在调用 UseEndpoints 时，您可以在方法中配置各种终结点，例如使用 endpoints.MapControllers() 来注册控制器路由。
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddMvc(options =>
+    {
+        options.EnableEndpointRouting = false;
+    });
+}
+
+public void Configure(IApplicationBuilder app)
+{
+    app.UseRouting();
+
+    app.UseEndpoints(endpoints =>
+    {
+        // 此处没有 endpoints.MapControllers() 的调用
+    });
+}
+```
+
+虽然禁用了路由端点，此时controller上的路由配置仍有效。
+
+TODO 为什么要禁用路由端点？路由解析原理？
+
+
+
+#### string.Equals静态方法支持通过多种规则比较
+
+源码：
+
+```c#
+/// <summary>Compare strings using culture-sensitive sort rules and the current culture.</summary>
+CurrentCulture,
+/// <summary>Compare strings using culture-sensitive sort rules, the current culture, and ignoring the case of the strings being compared.</summary>
+CurrentCultureIgnoreCase,
+/// <summary>Compare strings using culture-sensitive sort rules and the invariant culture.</summary>
+InvariantCulture,
+/// <summary>Compare strings using culture-sensitive sort rules, the invariant culture, and ignoring the case of the strings being compared.</summary>
+InvariantCultureIgnoreCase,
+/// <summary>Compare strings using ordinal (binary) sort rules.</summary>
+Ordinal,
+/// <summary>Compare strings using ordinal (binary) sort rules and ignoring the case of the strings being compared.</summary>
+OrdinalIgnoreCase,
+```
+
+
+
+#### MemberwiseClone()
+
+Ojbect类的一个方法，返回当前对象的浅克隆对象，object类型
+
+
+
+#### AggregateException循环捕获异常
+
+```c#
+for (int i = 0; i < 3; i++)
+{
+    try
+    {
+        if (i % 2 == 0)
+        {
+            throw new Exception("ex 1");
+        }
+        else
+        {
+            throw new Exception("ex 0");
+        }
+    }
+    catch (Exception e)
+    {
+        exceptions.Add(e);
+    }
+}
+
+foreach (var exception in exceptions)
+{
+    Console.WriteLine(exceptions);
+}
+```
+
+当在循环内部的 `try-catch` 块中捕获异常时，异常仅会中断当前迭代，并在处理后继续执行剩余的迭代。
+
+AggregateException用于封装多个异常，还可以通过Handle方法根据特定条件处理每个异常，Flatten方法将异常树扁平化
+
+
+
+使用.GetAwaiter().GetResult() 需要同步执行异步代码时。需要同步等待并直接获取原始异常的场景中，而不想处理 AggregateException。
