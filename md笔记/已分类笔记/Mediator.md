@@ -176,8 +176,7 @@ public HelloWorldController(IMediator mediator)
 }
 
 [Route("helloWorld"), HttpGet]
-[HttpPost]
-public async Task<IActionResult> HelloWorldAsync([FromBody] HelloWorldCommand command)
+public async Task<IActionResult> HelloWorldAsync([FromQuery] HelloWorldCommand command)
 {
     var response = await _mediator.SendAsync<HelloWorldCommand, HelloWorldResponse>(command).ConfigureAwait(false);
 
