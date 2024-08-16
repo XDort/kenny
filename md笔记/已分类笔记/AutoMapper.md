@@ -6,9 +6,39 @@ CreateMap<Foods, FoodDto>();
 
 这样配置映射是支持映射返回集合的，不用多加个List<>不然会报错
 
-```
+```c#
 return _mapper.Map<List<FoodDto>>(foods);
 ```
+
+
+
+#### 集成AutoMapper
+
+导入AutoMapper、AutoMapper.Contrib.Autofac.DependencyInjection
+
+
+
+继承AutoMapper提供的Profile类，进行对象关系映射
+
+```c#
+public class FoodMapping : Profile
+{
+    public FoodMapping()
+    {
+        CreateMap<Foods, FoodDto>();
+    }
+}
+```
+
+
+
+在Autofac的Module类下注册AutoMapper服务
+
+```
+builder.RegisterAutoMapper(typeof(PractiseForKennyModule).Assembly);
+```
+
+实现类中注入Mapper
 
 
 
