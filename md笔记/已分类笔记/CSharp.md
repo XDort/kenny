@@ -460,3 +460,29 @@ IEnumerable<int> TestEnumerator(int i)
 #### 匿名类型自动重写的方法
 
 匿名类型在创建时自动重写了 `Equals` 和 `GetHashCode` 方法，因此在使用匿名类型的集合时无需显式重写这些方法。
+
+
+
+语法糖
+
+```c#
+if (Entity != null) return; //为true直接返回
+{
+    // 如果条件为 false，将执行大括号中的代码块
+    // 一些逻辑
+}
+```
+
+<br>
+
+Func委托参数的传递
+
+ Func<IQueryable\<ResellerUser>,IQueryable\<ResellerUser>> queryable 
+
+```c#
+queryable: query => //使用参数中的变量名
+{
+    return query.Where(x => x.MerchId == merchId);
+}
+```
+

@@ -272,3 +272,4 @@ AggregateException用于封装多个异常，还可以通过Handle方法根据�
 
 
 使用.GetAwaiter().GetResult() 需要同步执行异步代码时。需要同步等待并直接获取原始异常的场景中，而不想处理 AggregateException。
+

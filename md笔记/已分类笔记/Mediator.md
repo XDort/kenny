@@ -187,3 +187,38 @@ public async Task<IActionResult> HelloWorldAsync([FromQuery] HelloWorldCommand c
 
 
 测试跑通👏
+
+
+
+集成一个mediator demo应用
+
+#### 测试event发布时，多个eventhandler之间的执行顺序
+
+```c#
+public class FoodsEventHandler : IEventHandler<FoodsEvent>
+{
+    public async Task Handle(IReceiveContext<FoodsEvent> context, CancellationToken cancellationToken)
+    {
+        await Task.Delay(5000);
+        Console.WriteLine("EventHandler 线程" + Thread.CurrentThread.ManagedThreadId + " 时间 " + DateTimeOffset.Now);
+    }
+}
+```
+
+```c#
+public async Task Handle(IReceiveContext<FoodsEvent> context, CancellationToken cancellationToken)
+{
+    
+    Console.WriteLine("EventHandler2 线程" + Thread.CurrentThread.ManagedThreadId + " 时间 " + DateTimeOffset.Now);
+}
+```
+
+结果：
+
+CommandHandler 线程13
+EventHandler 线程13 时间 2024/8/15 14:18:02 +08:00
+EventHandler2 线程13 时间 2024/8/15 14:18:02 +08:00
+
+
+
+测试可以得知，请求进入EventHandler是同步的，多个EventHandler处理完毕才能返回

@@ -150,3 +150,35 @@ propsWithMultiLangAttribute.ForEach(prop =>
 
 
 多语言内存缓存相关参见MultiLanguagesService.cs的InitializeMultiLanguagesCache方法，由AdminController.cs的MemoryInit方法控制缓存的初始化
+
+
+
+#### AutoMapper可以用于浅克隆
+
+```c#
+var foods = new Foods
+{
+    Name = "target",
+    Color = "red",
+    CreatedDate = DateTimeOffset.Now
+};
+var destFood = _mapper.Map<Foods>(foods);
+
+foods.Name = "modified";
+
+foreach (var propertyInfo in destFood.GetType().GetProperties())
+{
+    Console.WriteLine(propertyInfo.GetValue(destFood));
+}
+```
+
+结果：
+
+0
+modified
+red
+2024/8/16 09:19:10 +08:00
+
+<br>
+
+可以看到Map后对foods的修改，会导致destFood对应被修改，说明是浅克隆

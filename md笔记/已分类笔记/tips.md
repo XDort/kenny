@@ -147,3 +147,14 @@ for (int i = 0; i < 10; i++)
 
 
 当你在拥有main方法的项目中引用`Microsoft.NET.Test.Sdk`，可能会导致多于一个入口点的报错，推测是Test包会自动生成一个main方法。
+
+
+
+<br>
+
+mac在.Net官网安装的sdk可能在以下路径，与rider安装在用户下的目录不同，没有配置环境变量可能识别不到
+
+/usr/local/share/dotnet
+
+ide修改路径后清除缓存重启
+
